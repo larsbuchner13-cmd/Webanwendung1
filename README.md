@@ -27,24 +27,44 @@ Claude (`lib/claudeClient.ts`) kommt gezielt nur auf der **Kommunikationsebene**
 ## Tech-Stack
  
 - **Frontend/Backend:** Next.js (App Router) + TypeScript + Tailwind CSS
-- **Datenbank:** Prisma ORM + SQLite
+- **Datenbank:** Prisma ORM + PostgreSQL (z. B. Vercel Postgres / Neon)
 - **KI:** Anthropic API (Claude) für die Rationale-Texte
 - **PDF-Export:** pdf-lib
-## Setup
- 
+
+## Setup (lokal)
+
 ```bash
 npm install
 cp .env.example .env
-# ANTHROPIC_API_KEY in .env eintragen
+# DATABASE_URL / DIRECT_URL und ANTHROPIC_API_KEY in .env eintragen
 npx prisma db push
 npm run db:seed
 npm run dev
 ```
- 
+
 Die App läuft danach unter [http://localhost:3000](http://localhost:3000).
- 
+
 Ohne `ANTHROPIC_API_KEY` funktioniert die App weiterhin – die Regel-Engine erzeugt den Plan wie gewohnt, nur die Rationale-Texte pro Trainingstag bleiben leer.
- 
+
+## Deployment (Vercel)
+
+Die App braucht eine echte, netzwerkerreichbare Postgres-Datenbank – eine
+lokale SQLite-Datei funktioniert auf Vercels Serverless-Functions nicht
+(read-only Dateisystem, keine persistenten Dateien zwischen Requests).
+
+1. Im Vercel-Dashboard unter **Storage** eine Postgres-Datenbank (Neon-Integration)
+   anlegen. Vercel trägt die Connection-Strings automatisch als Env Vars ein
+   (Name kann variieren, z. B. `POSTGRES_URL` / `POSTGRES_URL_NON_POOLING`
+   oder `DATABASE_URL` / `DATABASE_URL_UNPOOLED`).
+2. In den Projekteinstellungen sicherstellen, dass die Variablen
+   `DATABASE_URL` (pooled) und `DIRECT_URL` (direct/unpooled) gesetzt sind –
+   ggf. als zusätzliche Env Vars mit den Werten der oben generierten
+   Variablen anlegen, falls die Namen abweichen.
+3. `ANTHROPIC_API_KEY` als Env Var ergänzen (optional, siehe oben).
+4. Beim Build führt `npm run build` automatisch `prisma db push` und den
+   Seed-Vorgang aus, bevor `next build` läuft – die Datenbank ist nach jedem
+   Deploy also automatisch synchron und mit den Übungen befüllt.
+
 ## Projektstruktur
  
 ```
