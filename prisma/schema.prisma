@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  name        String
+  goal        String
+  level       String
+  daysPerWeek Int
+  equipment   String
+  createdAt   DateTime @default(now())
+
+  plans        WorkoutPlan[]
+  progressLogs ProgressLog[]
+}
+
+model Exercise {
+  id          String   @id @default(cuid())
+  name        String
+  muscleGroup String
+  equipment   String
+  videoUrl    String?
+  difficulty  String
+
+  entries      WorkoutExerciseEntry[]
+  progressLogs ProgressLog[]
+}
+
+model WorkoutPlan {
+  id          String    @id @default(cuid())
+  userId      String
+  cycleNumber Int       @default(1)
+  startDate   DateTime  @default(now())
+  endDate     DateTime?
+  notes       String?
+
+  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  days WorkoutDay[]
+}
+
+model WorkoutDay {
+  id        String  @id @default(cuid())
+  planId    String
+  dayIndex  Int
+  focus     String
+  rationale String?
+
+  plan    WorkoutPlan            @relation(fields: [planId], references: [id], onDelete: Cascade)
+  entries WorkoutExerciseEntry[]
+}
+
+model WorkoutExerciseEntry {
+  id           String @id @default(cuid())
+  workoutDayId String
+  exerciseId   String
+  sets         Int
+  reps         String
+  restSeconds  Int
+  orderIndex   Int
+
+  workoutDay WorkoutDay @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
+  exercise   Exercise   @relation(fields: [exerciseId], references: [id])
+}
+
+model ProgressLog {
+  id           String   @id @default(cuid())
+  userId       String
+  exerciseId   String
+  date         DateTime @default(now())
+  weightUsed   Float
+  repsAchieved Int
+  rpe          Float?
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercise Exercise @relation(fields: [exerciseId], references: [id])
+}
