@@ -36,7 +36,7 @@ Claude (`lib/claudeClient.ts`) kommt gezielt nur auf der **Kommunikationsebene**
 ```bash
 npm install
 cp .env.example .env
-# DATABASE_URL / DIRECT_URL und ANTHROPIC_API_KEY in .env eintragen
+# DATABASE_URL und ANTHROPIC_API_KEY in .env eintragen
 npx prisma db push
 npm run db:seed
 npm run dev
@@ -53,13 +53,11 @@ lokale SQLite-Datei funktioniert auf Vercels Serverless-Functions nicht
 (read-only Dateisystem, keine persistenten Dateien zwischen Requests).
 
 1. Im Vercel-Dashboard unter **Storage** eine Postgres-Datenbank (Neon-Integration)
-   anlegen. Vercel trägt die Connection-Strings automatisch als Env Vars ein
-   (Name kann variieren, z. B. `POSTGRES_URL` / `POSTGRES_URL_NON_POOLING`
-   oder `DATABASE_URL` / `DATABASE_URL_UNPOOLED`).
-2. In den Projekteinstellungen sicherstellen, dass die Variablen
-   `DATABASE_URL` (pooled) und `DIRECT_URL` (direct/unpooled) gesetzt sind –
-   ggf. als zusätzliche Env Vars mit den Werten der oben generierten
-   Variablen anlegen, falls die Namen abweichen.
+   anlegen, oder eine bestehende Neon-Datenbank verbinden.
+2. In den Projekteinstellungen unter **Environment Variables** sicherstellen,
+   dass eine Variable `DATABASE_URL` mit dem Postgres-Connection-String gesetzt
+   ist (Vercel/Neon legt teils Variablen mit anderem Namen an, z. B.
+   `POSTGRES_URL` – dann zusätzlich `DATABASE_URL` mit demselben Wert anlegen).
 3. `ANTHROPIC_API_KEY` als Env Var ergänzen (optional, siehe oben).
 4. Beim Build führt `npm run build` automatisch `prisma db push` und den
    Seed-Vorgang aus, bevor `next build` läuft – die Datenbank ist nach jedem
